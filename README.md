@@ -8,6 +8,19 @@ Cette application est entièrement conteneurisée avec Docker, ce qui permet un 
 - **Base de données MySQL** : Conteneur pour le stockage des données (MySQL 8.0) 
 - **Adminer** : Interface web pour la gestion de la base de données
 
+### Configuration requise
+
+Le fichier `.env` du projet doit contenir les variables suivantes pour la connexion à la base de données :
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=genealogy
+DB_USERNAME=stage_svp
+DB_PASSWORD=stage_svp
+```
+
 Pour démarrer l'application :
 
 ```bash
