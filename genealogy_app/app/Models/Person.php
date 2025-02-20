@@ -35,7 +35,6 @@ class Person extends Model
 
    public function getDegreeWith($target_person_id) 
    {
-        // Track visited nodes and their degrees
         $visited = [];
         $queue = new \SplQueue();
         $queue->enqueue(['id' => $this->id, 'degree' => 0]);
@@ -45,31 +44,29 @@ class Person extends Model
             $current_id = $current['id'];
             $current_degree = $current['degree'];
 
-            // If we reach the target person, return the degree
+        
             if ($current_id == $target_person_id) {
                 return $current_degree;
             }
 
-            // Stop if degree exceeds 25
             if ($current_degree >= 25) {
                 return false;
             }
 
-            // Skip if already visited
             if (isset($visited[$current_id])) {
                 continue;
             }
 
             $visited[$current_id] = true;
 
-            // Get all direct relationships (both parent and child) in a single query
+            // Récupérer les personnes liées à la personne courante
             $relationships = DB::select("
                 SELECT parent_id as related_id FROM relationships WHERE child_id = :id1
                 UNION 
                 SELECT child_id as related_id FROM relationships WHERE parent_id = :id2
             ", ['id1' => $current_id, 'id2' => $current_id]);
 
-            // Add all related people to the queue
+            // Ajout des personnes liées à la file d'attente
             foreach ($relationships as $rel) {
                 if (!isset($visited[$rel->related_id])) {
                     $queue->enqueue([
@@ -80,6 +77,6 @@ class Person extends Model
             }
         }
 
-        return false; // No path found
+        return false;
     }
 }

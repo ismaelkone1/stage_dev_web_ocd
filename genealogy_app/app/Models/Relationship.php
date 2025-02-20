@@ -12,13 +12,11 @@ class Relationship extends Model
         'child_id',
     ];
 
-    // Relation avec le parent
     public function parent()
     {
         return $this->belongsTo(Person::class, 'parent_id');
     }
 
-    // Relation avec l'enfant
     public function child()
     {
         return $this->belongsTo(Person::class, 'child_id');

@@ -43,18 +43,15 @@ class PersonController extends Controller
             'date_of_birth' => 'nullable|date'
         ]);
 
-        // Format first_name
         $validated['first_name'] = Str::ucfirst(Str::lower($validated['first_name']));
 
-        // Format last_name
         $validated['last_name'] = Str::upper($validated['last_name']);
 
-        // Format birth_name
         $validated['birth_name'] = !empty($validated['birth_name']) 
             ? Str::upper($validated['birth_name'])
             : $validated['last_name'];
 
-        // Format middle_names
+        // Format pour les middle names
         if (!empty($validated['middle_names'])) {
             $middleNames = array_map(function($name) {
                 return Str::ucfirst(Str::lower(trim($name)));
@@ -62,7 +59,6 @@ class PersonController extends Controller
             $validated['middle_names'] = implode(',', $middleNames);
         }
 
-        // Add authenticated user id
         $validated['created_by'] = Auth::id();
 
         $person = Person::create($validated);

@@ -82,15 +82,8 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                         <a href="{{ route('persons.show', $person->id) }}" class="text-indigo-600 hover:text-indigo-900">Voir</a>
-                                        <a href="{{ route('persons.edit', $person->id) }}" class="text-green-600 hover:text-green-900">Modifier</a>
-                                        <form action="{{ route('persons.destroy', $person->id) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette personne ?')" 
-                                                    class="text-red-600 hover:text-red-900">
-                                                Supprimer
-                                            </button>
-                                        </form>
+                                        <a class="text-green-600 hover:text-green-900">Modifier</a>
+                                        
                                     </td>
                                 </tr>
                                 @endforeach
