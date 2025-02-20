@@ -9,11 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('people', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('created_by');
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('birth_name')->nullable();
+            $table->string('middle_names')->nullable();
+            $table->date('date_of_birth')->nullable();
             $table->timestamps();
+
+            // Indexes
+            $table->index('created_by');
         });
     }
 

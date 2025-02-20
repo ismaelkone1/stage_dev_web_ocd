@@ -4,9 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Person;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use App\Models\User;
+use Illuminate\Routing\Controller as Controller;
+use Illuminate\Support\Facades\Auth; 
 
 class PersonController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index']);
+    }
+
     public function index()
     {
         $persons = Person::with('creator')->get();
@@ -34,8 +43,29 @@ class PersonController extends Controller
             'date_of_birth' => 'nullable|date'
         ]);
 
-        $person = new Person($validated);
-        $person->save();
+        // Format first_name
+        $validated['first_name'] = Str::ucfirst(Str::lower($validated['first_name']));
+
+        // Format last_name
+        $validated['last_name'] = Str::upper($validated['last_name']);
+
+        // Format birth_name
+        $validated['birth_name'] = !empty($validated['birth_name']) 
+            ? Str::upper($validated['birth_name'])
+            : $validated['last_name'];
+
+        // Format middle_names
+        if (!empty($validated['middle_names'])) {
+            $middleNames = array_map(function($name) {
+                return Str::ucfirst(Str::lower(trim($name)));
+            }, explode(',', $validated['middle_names']));
+            $validated['middle_names'] = implode(',', $middleNames);
+        }
+
+        // Add authenticated user id
+        $validated['created_by'] = Auth::id();
+
+        $person = Person::create($validated);
 
         return redirect()
             ->route('persons.index')

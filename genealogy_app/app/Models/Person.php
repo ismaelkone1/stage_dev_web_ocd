@@ -16,7 +16,7 @@ class Person extends Model
         'date_of_birth'
     ];
 
-    protected $dates = ['date_of_birth'];
+    protected $dates = ['date_of_birth' => 'datetime'];
 
     public function children()
     {
@@ -33,40 +33,53 @@ class Person extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function getDegreeWith($target_person_id)
-    {
+   public function getDegreeWith($target_person_id) 
+   {
+        // Track visited nodes and their degrees
         $visited = [];
-        $queue = [['id' => $this->id, 'degree' => 0]];
-        
-        while (!empty($queue)) {
-            $current = array_shift($queue);
-            
-            if ($current['degree'] > 25) {
+        $queue = new \SplQueue();
+        $queue->enqueue(['id' => $this->id, 'degree' => 0]);
+
+        while (!$queue->isEmpty()) {
+            $current = $queue->dequeue();
+            $current_id = $current['id'];
+            $current_degree = $current['degree'];
+
+            // If we reach the target person, return the degree
+            if ($current_id == $target_person_id) {
+                return $current_degree;
+            }
+
+            // Stop if degree exceeds 25
+            if ($current_degree >= 25) {
                 return false;
             }
-            
-            if ($current['id'] == $target_person_id) {
-                return $current['degree'];
+
+            // Skip if already visited
+            if (isset($visited[$current_id])) {
+                continue;
             }
-            
-            if (!isset($visited[$current['id']])) {
-                $visited[$current['id']] = true;
-                
-                // Récupérer les enfants et les parents en une seule requête
-                $relations = DB::select("
-                    SELECT parent_id as related_id FROM relationships WHERE child_id = ?
-                    UNION
-                    SELECT child_id as related_id FROM relationships WHERE parent_id = ?
-                ", [$current['id'], $current['id']]);
-                
-                foreach ($relations as $relation) {
-                    if (!isset($visited[$relation->related_id])) {
-                        array_push($queue, ['id' => $relation->related_id, 'degree' => $current['degree'] + 1]);
-                    }
+
+            $visited[$current_id] = true;
+
+            // Get all direct relationships (both parent and child) in a single query
+            $relationships = DB::select("
+                SELECT parent_id as related_id FROM relationships WHERE child_id = :id1
+                UNION 
+                SELECT child_id as related_id FROM relationships WHERE parent_id = :id2
+            ", ['id1' => $current_id, 'id2' => $current_id]);
+
+            // Add all related people to the queue
+            foreach ($relationships as $rel) {
+                if (!isset($visited[$rel->related_id])) {
+                    $queue->enqueue([
+                        'id' => $rel->related_id,
+                        'degree' => $current_degree + 1
+                    ]);
                 }
             }
         }
-        
-        return false;
+
+        return false; // No path found
     }
 }
